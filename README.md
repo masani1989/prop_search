@@ -109,10 +109,6 @@ Modify in `app.py`:
 - Default BHK selection
 - Possession year range
 
-## License
-
-MIT License
-
 ## Contributing
 
 Contributions welcome! Please open an issue or submit a pull request.
