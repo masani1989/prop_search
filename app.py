@@ -93,7 +93,7 @@ def extract_bhk_types(projects):
                 bhk_types.add(bhk)
     return sorted(list(bhk_types))
 
-def filter_projects(projects, search_query, price_range, bhk_filter, possession_range):
+def filter_projects(projects, search_query, price_range, bhk_filter, possession_range, area_range):
     """Filter projects based on search query, price range, BHK, and possession date"""
     filtered = []
     
@@ -104,6 +104,21 @@ def filter_projects(projects, search_query, price_range, bhk_filter, possession_
             builder_name = project.get('builder_name', '').lower()
             if search_query.lower() not in project_name and search_query.lower() not in builder_name:
                 continue
+        
+        # # Carpet area filter
+        # valid_area = False
+        # for config in project.get('configurations', []):
+        #     size_str = config.get('size', '')
+        #     match = re.search(r'([\d.]+)\s*sq\.?ft\.?', size_str, re.IGNORECASE)
+        #     if match:
+        #         area = float(match.group(1))
+        #         if area_range[0] <= area <= area_range[1]:
+        #             valid_area = True
+        #             break
+        
+        # # If no configuration matches the carpet area range, skip the project
+        # if not valid_area:
+        #     continue
         
         # Possession date filter
         possession_date = parse_possession_date(project.get('possession_date', ''))
@@ -124,6 +139,14 @@ def filter_projects(projects, search_query, price_range, bhk_filter, possession_
             # BHK filter
             if bhk_filter and bhk not in bhk_filter:
                 continue
+
+            # size filter
+            size_str = config.get('size', '')
+            match = re.search(r'([\d.]+)\s*sq\.?ft\.?', size_str, re.IGNORECASE)
+            if match:
+                area = float(match.group(1))
+                if area < area_range[0] or area > area_range[1]:
+                    continue
             
             valid_configs.append(config)
         
@@ -286,6 +309,20 @@ bhk_filter = st.sidebar.multiselect(
     default=bhk_types[3:5] if len(bhk_types) > 2 else bhk_types  # Default to 1BHK and 2BHK if available
 )
 
+# Carpet Area filter
+st.sidebar.subheader("Carpet Area (sq.ft.)")
+min_area = 0
+max_area = 5000
+area_range = st.sidebar.slider(
+    "Select Carpet Area Range",
+    min_value=min_area,
+    max_value=max_area,
+    value=(min_area, max_area),
+    step=25
+)
+
+
+
 # Possession date filter
 st.sidebar.subheader("Possession Timeline")
 current_year = datetime.now().year
@@ -307,7 +344,8 @@ filtered_projects = filter_projects(
     search_query, 
     price_range, 
     bhk_filter, 
-    possession_range
+    possession_range,
+    area_range
 )
 
 # Display results
