@@ -26,7 +26,8 @@ def parse_projects(html_content):
             project_data = {}
             
             # Extract Project Name
-            project_name_elem = card.find('p', class_=re.compile(r'.*font-bold.*text-primary.*'))
+            project_name_elem = card.find('h3', class_=re.compile(r'.*font-bold.*text-primary.*'))
+            print(f"Project Name Element: {project_name_elem}")
             if project_name_elem:
                 project_data['project_name'] = project_name_elem.text.strip()
             
